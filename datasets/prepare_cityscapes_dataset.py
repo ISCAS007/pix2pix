@@ -31,7 +31,7 @@ def process_cityscapes(gtFine_dir, leftImg8bit_dir, output_dir, phase):
     os.makedirs(savedir, exist_ok=True)
     os.makedirs(savedir + 'A', exist_ok=True)
     os.makedirs(savedir + 'B', exist_ok=True)
-    print("Directory structure prepared at %s" % output_dir)
+    print(("Directory structure prepared at %s" % output_dir))
     
     segmap_expr = os.path.join(gtFine_dir, phase) + "/*/*_color.png"
     segmap_paths = glob.glob(segmap_expr)
@@ -63,7 +63,7 @@ def process_cityscapes(gtFine_dir, leftImg8bit_dir, output_dir, phase):
         segmap.save(savepath, format='JPEG', subsampling=0, quality=100)
         
         if i % (len(segmap_paths) // 10) == 0:
-            print("%d / %d: last image saved at %s, " % (i, len(segmap_paths), savepath))
+            print(("%d / %d: last image saved at %s, " % (i, len(segmap_paths), savepath)))
 
 
         

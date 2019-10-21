@@ -37,7 +37,7 @@ def main():
     hist_perframe = np.zeros((n_cl, n_cl))
     for i, idx in enumerate(label_frames):
         if i % 10 == 0:
-            print('Evaluating: %d/%d' % (i, len(label_frames)))
+            print(('Evaluating: %d/%d' % (i, len(label_frames))))
         city = idx.split('_')[0]
         # idx is city_shot_frame
         label = CS.load_label(args.split, city, idx)

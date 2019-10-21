@@ -45,10 +45,10 @@ class cityscapes:
         """
         label = np.array(label, dtype=np.float32)
         if sys.version_info[0] < 3:
-            for k, v in self.id2trainId.iteritems():
+            for k, v in self.id2trainId.items():
                 label[label == k] = v
         else:
-            for k, v in self.id2trainId.items():
+            for k, v in list(self.id2trainId.items()):
                 label[label == k] = v
         return label
 
@@ -85,10 +85,10 @@ class cityscapes:
             label = label[0]
         color = np.empty((label.shape[0], label.shape[1], 3))
         if sys.version_info[0] < 3:
-            for k, v in self.trainId2color.iteritems():
+            for k, v in self.trainId2color.items():
                 color[label == k, :] = v
         else:
-            for k, v in self.trainId2color.items():
+            for k, v in list(self.trainId2color.items()):
                 color[label == k, :] = v
         return color
 

@@ -32,7 +32,7 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256):
     webpage.add_header(name)
     ims, txts, links = [], [], []
 
-    for label, im_data in visuals.items():
+    for label, im_data in list(visuals.items()):
         im = util.tensor2im(im_data)
         image_name = '%s_%s.png' % (name, label)
         save_path = os.path.join(image_dir, image_name)
@@ -76,7 +76,7 @@ class Visualizer():
         if self.use_html:  # create an HTML object at <checkpoints_dir>/web/; images will be saved under <checkpoints_dir>/web/images/
             self.web_dir = os.path.join(opt.checkpoints_dir, opt.name, 'web')
             self.img_dir = os.path.join(self.web_dir, 'images')
-            print('create web directory %s...' % self.web_dir)
+            print(('create web directory %s...' % self.web_dir))
             util.mkdirs([self.web_dir, self.img_dir])
         # create a logging file to store training losses
         self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
@@ -92,7 +92,7 @@ class Visualizer():
         """If the program could not connect to Visdom server, this function will start a new server at port < self.port > """
         cmd = sys.executable + ' -m visdom.server -p %d &>/dev/null &' % self.port
         print('\n\nCould not connect to Visdom server. \n Trying to start a server....')
-        print('Command: %s' % cmd)
+        print(('Command: %s' % cmd))
         Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
     def display_current_results(self, visuals, epoch, save_result):
@@ -107,7 +107,7 @@ class Visualizer():
             ncols = self.ncols
             if ncols > 0:        # show all the images in one visdom panel
                 ncols = min(ncols, len(visuals))
-                h, w = next(iter(visuals.values())).shape[:2]
+                h, w = next(iter(list(visuals.values()))).shape[:2]
                 table_css = """<style>
                         table {border-collapse: separate; border-spacing: 4px; white-space: nowrap; text-align: center}
                         table td {width: % dpx; height: % dpx; padding: 4px; outline: 4px solid black}
@@ -118,7 +118,7 @@ class Visualizer():
                 label_html_row = ''
                 images = []
                 idx = 0
-                for label, image in visuals.items():
+                for label, image in list(visuals.items()):
                     image_numpy = util.tensor2im(image)
                     label_html_row += '<td>%s</td>' % label
                     images.append(image_numpy.transpose([2, 0, 1]))
@@ -145,7 +145,7 @@ class Visualizer():
             else:     # show each image in a separate visdom panel;
                 idx = 1
                 try:
-                    for label, image in visuals.items():
+                    for label, image in list(visuals.items()):
                         image_numpy = util.tensor2im(image)
                         self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label),
                                        win=self.display_id + idx)
@@ -156,7 +156,7 @@ class Visualizer():
         if self.use_html and (save_result or not self.saved):  # save images to an HTML file if they haven't been saved.
             self.saved = True
             # save images to the disk
-            for label, image in visuals.items():
+            for label, image in list(visuals.items()):
                 image_numpy = util.tensor2im(image)
                 img_path = os.path.join(self.img_dir, 'epoch%.3d_%s.png' % (epoch, label))
                 util.save_image(image_numpy, img_path)
@@ -167,7 +167,7 @@ class Visualizer():
                 webpage.add_header('epoch [%d]' % n)
                 ims, txts, links = [], [], []
 
-                for label, image_numpy in visuals.items():
+                for label, image_numpy in list(visuals.items()):
                     image_numpy = util.tensor2im(image)
                     img_path = 'epoch%.3d_%s.png' % (n, label)
                     ims.append(img_path)
@@ -213,7 +213,7 @@ class Visualizer():
             t_data (float) -- data loading time per data point (normalized by batch_size)
         """
         message = '(epoch: %d, iters: %d, time: %.3f, data: %.3f) ' % (epoch, iters, t_comp, t_data)
-        for k, v in losses.items():
+        for k, v in list(losses.items()):
             message += '%s: %.3f ' % (k, v)
 
         print(message)  # print the message
