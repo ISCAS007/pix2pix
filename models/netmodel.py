@@ -14,6 +14,7 @@ from torch.nn import init
 import torch.optim as optim
 import torch.nn.functional as F
 import functools
+from models.seg_model import get_segmentation_network
 
 nclass=11
 
@@ -190,47 +191,9 @@ class NetC(nn.Module):
     def __init__(self,input_nc,output_nc, ndf=64, norm_layer=nn.BatchNorm2d):
         super(NetC, self).__init__()
         self.output_nc=output_nc
-        self.net = [
-            nn.Conv2d(input_nc, ndf, 15,stride=4),
-            # norm_layer(ndf),
-            nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(2),
-
-            nn.Conv2d(ndf, ndf * 2, 5, stride=4),
-            # norm_layer(ndf* 2),
-            nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(2),
-
-            nn.Conv2d(ndf * 2, ndf * 4, 3),
-            # norm_layer(ndf * 4),
-            nn.LeakyReLU(0.2, True),
-            nn.Conv2d(ndf * 4, ndf * 4, 3),
-            # norm_layer(ndf * 4),
-            nn.LeakyReLU(0.2, True),
-
-            nn.Conv2d(ndf * 4, ndf * 4, 3),
-            # norm_layer(ndf * 4),
-            nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(2),
-            nn.Conv2d(ndf * 4, ndf * 8, 7),
-            # norm_layer(ndf * 8),
-            nn.LeakyReLU(0.2, True),
-            nn.Dropout(0.5),
-
-            nn.Conv2d(ndf * 8, ndf * 8, 1, stride=2),
-            # norm_layer(ndf * 8),
-            nn.LeakyReLU(0.2, True),
-            nn.Dropout(0.5),
-            nn.Conv2d(ndf * 8, 11, 1),
-            # norm_layer(11),
-        ]
-        self.net = nn.Sequential(*self.net)
+        self.net = get_segmentation_network(output_nc)
     def forward(self, x):
         x = self.net(x)
-        # print(x.shape)
-        x = x.view(-1, 11)
-        # x = F.softmax(x, dim=-1)
-
         return x
 
 class NetD(nn.Module):

@@ -64,7 +64,7 @@ class sketchGanModel(BaseModel):
         if self.isTrain:  # define a discriminator; conditional GANs need to take both input and output images; Therefore, #channels for D is input_nc + output_nc
             self.netD = netmodel.define_Net(6, 3, 64, "NetD", 'batch',
                                       not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
-            self.netC = netmodel.define_Net(3, 3, 64, "NetC", 'batch',
+            self.netC = netmodel.define_Net(3, 5, 64, "NetC", 'batch',
                                             not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
         if self.isTrain:
             # define loss functions

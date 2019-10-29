@@ -50,21 +50,12 @@ if __name__ == '__main__':
             visualizer.reset()
             total_iters += opt.batch_size
             epoch_iter += opt.batch_size
-            # print(data.keys())
-            # print(data['A'].shape)
-            classIndex = ["cat", "cow", "horse", "dog", "sheep",
-                          "airplane", "motorcycle", "songbird", "truck", "bicycle", "car"]
-            # A=data['A']
-            # B=data['B']
-            print(data['A_paths'])
-            C=np.array([int(classIndex.index(i.split(os.sep)[-1].split("_")[0])) for i in data['A_paths']])
-            C = torch.LongTensor(C).view(-1, 1)
-            # print(C)
-            # C=torch.LongTensor(np.array(C))
-            # template=np.zeros((len(C),len(classIndex)))
-            # C = torch.zeros(C.shape[0],len(classIndex)).scatter_(1, C, 1)
-            data['C']=C
-            # print(C)
+
+            #for image classification
+            #data['C']=data['class_label']
+
+            #for image segmentation
+            data['C']=data['seg_img']
 
             model.set_input(data)         # unpack data from dataset and apply preprocessing
             model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
