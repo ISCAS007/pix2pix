@@ -5,7 +5,7 @@ import glob
 import matplotlib.pyplot as plt
 import cv2
 from PIL import Image
-
+from easydict import EasyDict as edict
 from data.base_dataset import BaseDataset, get_params, get_transform
 
 class SketchDataset(BaseDataset):
@@ -71,11 +71,11 @@ class SketchDataset(BaseDataset):
             img_file=os.path.join(self.img_root_path,raw_name+'-0.png')
             seg_file=os.path.join(self.seg_root_path,raw_name+'.png')
         else:
-            sub_class_name,raw_name=raw_name.split(os.sep)
-            img_file=os.path.join(self.img_root_path,raw_name+'-0.png')
+            sub_class_name,file_name=raw_name.split(os.sep)
+            img_file=os.path.join(self.img_root_path,file_name+'-0.png')
             if not os.path.exists(img_file):
-                img_file=os.path.join(self.img_root_path,sub_class_name+'_'+raw_name+'-0.png')
-            seg_file=os.path.join(self.seg_root_path,sub_class_name,raw_name+'.png')
+                img_file=os.path.join(self.img_root_path,sub_class_name+'_'+file_name+'-0.png')
+            seg_file=os.path.join(self.seg_root_path,sub_class_name,file_name+'.png')
         assert os.path.exists(img_file),img_file
         assert os.path.exists(seg_file),seg_file
 
@@ -103,112 +103,18 @@ class SketchDataset(BaseDataset):
                 'seg_paths':seg_file,'class_name':class_name,'class_label':class_label}
 
 if __name__ == '__main__':
-    split='test'
-    img_root_path=os.path.expanduser('~/lf/parseData/{}'.format(split))
-    img_files=glob.glob(os.path.join(img_root_path,'*.png'))
+    from options.test_options import TestOptions
+    opt = TestOptions().parse()
+    opt.phase='test'
+    opt.dataroot=''
+    opt.img_root_path=os.path.expanduser('~/lf/parseData/{}'.format(opt.phase))
 
-    #seg_root_path='/home/liufang/sketchCompelte2/train_sketches/merge_im'
-    if split=='train':
-        seg_root_path='/home/liufang/sketchCompelte2/train_sketch_GT/merge_GT'
-        seg_files=glob.glob(os.path.join(seg_root_path,'*.png'))
+    if opt.phase=='train':
+        opt.seg_root_path='/home/liufang/sketchCompelte2/train_sketch_GT/merge_GT'
     else:
-        seg_root_path='/home/liufang/sketchCompelte2/test_GT'
-        seg_files=glob.glob(os.path.join(seg_root_path,'*','*.png'))
-
-    img_files.sort()
-    seg_files.sort()
-    N=3
-
-    if split=='train':
-        class_info_files=glob.glob(os.path.join('data','lists','train_*.txt'))
-        class_info={}
-        for file_name in class_info_files:
-            with open(file_name,'r') as f:
-                for l in f.readlines():
-                    class_info[l.strip()]=os.path.splitext(os.path.basename(file_name))[0]
-    else:
-        class_info={}
-        for file_name in seg_files:
-            sub_class_name=file_name.split(os.sep)[-2]
-            raw_filename=os.path.splitext(file_name.split(os.sep)[-1])[0]
-
-            if sub_class_name in ['airplane','bird']:
-                class_info[raw_filename]='train_aeroplane_bird'
-            elif sub_class_name in ['bicycle','motorbike']:
-                class_info[raw_filename]='train_bicycle_motorbike'
-            elif sub_class_name in ['bus','car']:
-                class_info[raw_filename]='train_bus_car'
-            elif sub_class_name in ['cat','dog','sheep']:
-                class_info[raw_filename]='train_cat_dog_sheep'
-            elif sub_class_name in ['cow','horse']:
-                class_info[raw_filename]='train_cow_horse'
-            else:
-                assert False,'unknown sub class name {}'.format(sub_class_name)
+        opt.seg_root_path='/home/liufang/sketchCompelte2/test_GT'
 
 
-    i=0
-    for k,v in class_info.items():
-        i=i+1
-        if i>3:
-            break
-        print(k,v)
-
-    print(len(img_files),len(seg_files),len(class_info))
-    for i in img_files[0:N]:
-        print(i)
-        key=os.path.splitext(os.path.basename(i))[0]
-        if split=='test' and key.split('_')[0] in ['airplane','bird','bicycle',
-                    'motorbike','bus',
-                    'car','cat','dog','sheep',
-                    'cow','horse']:
-            sub_class_name=key.split('_')[0]
-            key=key.replace(sub_class_name+'_','')
-
-        if key[-2:]=='-0':
-            key=key[:-2]
-        else:
-            print('bad file name',key)
-
-        if key in class_info.keys():
-            print('class is',class_info[key])
-        else:
-            print('unknown class key',key)
-
-        img=cv2.imread(i)
-        plt.imshow(img)
-        plt.show()
-
-    for i in seg_files[0:N]:
-        print(i)
-        gt=cv2.imread(i,cv2.IMREAD_GRAYSCALE)
-        plt.imshow(gt)
-        plt.show()
-
-    unknown=0
-    for i,file_name in enumerate(img_files):
-        key=os.path.splitext(os.path.basename(file_name))[0]
-
-        if split=='test' and  key.split('_')[0] in ['airplane','bird','bicycle',
-                    'motorbike','bus',
-                    'car','cat','dog','sheep',
-                    'cow','horse']:
-            sub_class_name=key.split('_')[0]
-            key=key.replace(sub_class_name+'_','')
-
-        if key[-2:]=='-0':
-            key=key[:-2]
-        else:
-            print('bad file name',key)
-
-        if key in class_info.keys():
-    #        print('class is',class_info[key])
-            pass
-        else:
-    #        print('unknown class key',key)
-            unknown+=1
-
-        if unknown<10 and i < 10:
-            print('key=',key)
-
-    print('unknown image',unknown)
-
+    data=SketchDataset(opt)
+    for idx,d in enumerate(data):
+        print(idx)
