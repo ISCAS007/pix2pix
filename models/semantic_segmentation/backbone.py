@@ -16,7 +16,7 @@ class backbone(TN.Module):
     def __init__(self,config, use_none_layer=False):
         super().__init__()
         self.config=config
-        self.use_none_layer == use_none_layer
+        self.use_none_layer = use_none_layer
 
         self.get_layers()
         self.freeze_layers()

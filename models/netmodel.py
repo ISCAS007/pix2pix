@@ -325,7 +325,7 @@ def define_Net(input_nc, output_nc, ngf, netType, norm='batch', use_dropout=Fals
     if netType == 'NetG':
         net = NetG(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     elif netType == 'NetC':
-        net = NetC(input_nc, 11, ngf, norm_layer=norm_layer)
+        net = NetC(input_nc, 5, ngf, norm_layer=norm_layer)
     elif netType == 'NetD':
         net = NetD(input_nc, 1, ngf, norm_layer=norm_layer)
     else:
