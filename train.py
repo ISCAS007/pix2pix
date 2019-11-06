@@ -27,6 +27,7 @@ import torch
 import numpy as np
 import os
 from tqdm import tqdm
+from models.semantic_segmentation.metrics import MiouRunningScore
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
@@ -39,11 +40,13 @@ if __name__ == '__main__':
 #    visualizer = Visualizer(opt)   # create a visualizer that display/save images and plots
     total_iters = 0                # the total number of training iterations
 
+    miou_metric=MiouRunningScore(opt.class_number)
     for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1)):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>
         epoch_start_time = time.time()  # timer for entire epoch
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
 
+        miou_metric.reset()
         for i, data in enumerate(tqdm(dataset)):  # inner loop within one epoch
             iter_start_time = time.time()  # timer for computation per iteration
             if total_iters % opt.print_freq == 0:
@@ -60,6 +63,15 @@ if __name__ == '__main__':
 
             model.set_input(data)         # unpack data from dataset and apply preprocessing
             model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
+
+            miou_metric.update(label_trues=data['C'].data.cpu().numpy(),
+                               label_preds=torch.argmax(model.logitC,dim=1).data.cpu().numpy())
+
+
+#            score, class_iou = miou_metric.get_scores()
+#            acc = score['Overall Acc: \t']
+#            miou = score['Mean IoU : \t']
+#            print('acc={},miou={}'.format(acc,miou))
 
             if total_iters % opt.display_freq == 0:   # display images on visdom and save images to a HTML file
                 save_result = total_iters % opt.update_html_freq == 0
@@ -79,10 +91,14 @@ if __name__ == '__main__':
                 model.save_networks(save_suffix)
 
             iter_data_time = time.time()
+
         if epoch % opt.save_epoch_freq == 0:              # cache our model every <save_epoch_freq> epochs
             print(('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters)))
             model.save_networks('latest')
             model.save_networks(epoch)
 
-        print(('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time)))
+        score, class_iou = miou_metric.get_scores()
+        acc = score['Overall Acc: \t']
+        miou = score['Mean IoU : \t']
+        print(('End of epoch %d / %d \t acc=%0.2f \t miou=%0.2f  \t Time Taken: %d sec' % (epoch, opt.niter + opt.niter_decay,acc,miou,time.time() - epoch_start_time)))
         model.update_learning_rate()                     # update learning rates at the end of every epoch.
