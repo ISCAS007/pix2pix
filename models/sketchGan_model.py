@@ -65,7 +65,7 @@ class sketchGanModel(BaseModel):
             self.netD = netmodel.define_Net(6, 3, 64, "NetD", 'batch',
                                       not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
             self.netC = netmodel.define_Net(3, 5, 64, "NetC", 'batch',
-                                            not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
+                                            not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids, self.opt.class_number)
         if self.isTrain:
             # define loss functions
             self.criterionGAN = netmodel.GANLoss(opt.gan_mode).to(self.device)
@@ -104,11 +104,11 @@ class sketchGanModel(BaseModel):
             self.inputdata[:,0:3,:,:]=self.inputdata[:,3:6,:,:]
             self.inputdata[:, 3:6, :, :] = self.inputdata[:, 6:9, :, :]
             self.inputdata[:, 6:9, :, :] = self.fake_B
-        # print("inputdata.shape", self.inputdata.shape)
+#        print("inputdata.shape", self.inputdata.shape)
         self.fake_B = self.netG(self.inputdata)  # G(A)
-        print("fake_B.shape", self.fake_B.shape)
+#        print("fake_B.shape", self.fake_B.shape)
         self.logitC = self.netC(self.fake_B)
-        print("logitC.shape", self.logitC.shape)
+#        print("logitC.shape", self.logitC.shape)
     def backward_D(self):
         """Calculate GAN loss for the discriminator"""
         # Fake; stop backprop to the generator by detaching fake_B

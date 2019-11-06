@@ -98,7 +98,9 @@ class UnetSkipConnectionBlock(nn.Module):
             use_bias = norm_layer == nn.InstanceNorm2d
         if input_nc is None:
             input_nc = outer_nc
-        downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
+
+        kernel_size=4
+        downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=kernel_size,
                              stride=2, padding=1, bias=use_bias)
         downrelu = nn.LeakyReLU(0.2, True)
         downnorm = norm_layer(inner_nc)
@@ -107,21 +109,21 @@ class UnetSkipConnectionBlock(nn.Module):
 
         if outermost:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
-                                        kernel_size=4, stride=2,
+                                        kernel_size=kernel_size, stride=2,
                                         padding=1)
             down = [downconv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
             upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
-                                        kernel_size=4, stride=2,
+                                        kernel_size=kernel_size, stride=2,
                                         padding=1, bias=use_bias)
             down = [downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
         else:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
-                                        kernel_size=4, stride=2,
+                                        kernel_size=kernel_size, stride=2,
                                         padding=1, bias=use_bias)
             down = [downrelu, downconv, downnorm]
             up = [uprelu, upconv, upnorm]
@@ -156,10 +158,10 @@ class NetG(nn.Module):
         """
         super(NetG, self).__init__()
         # construct unet structure
-        self.conv1 = nn.Conv2d(9, 3, 3,)
+        self.conv1 = nn.Conv2d(9, 3, 3,1,1)
         self.BatchNorm1=nn.BatchNorm2d(3)
         self.LeakyReLU1 = nn.LeakyReLU(0.2, True)
-        self.conv2 = nn.Conv2d(3, 3, 3)
+        self.conv2 = nn.Conv2d(3, 3, 3,1,1)
         self.BatchNorm2 = nn.BatchNorm2d(3)
         self.LeakyReLU2 = nn.LeakyReLU(0.2, True)
         self.tanh = nn.Tanh()
@@ -181,16 +183,14 @@ class NetG(nn.Module):
         x = self.conv2(x)
         x = self.BatchNorm2(x)
         x = self.LeakyReLU2(x)
-        # print(x.shape)
         x = self.model(x)
         output=self.tanh(x)
         return output
 
 #TODO modify this network to segmentation network
 class NetC(nn.Module):
-    def __init__(self,input_nc,output_nc, ndf=64, norm_layer=nn.BatchNorm2d):
+    def __init__(self,input_nc,output_nc):
         super(NetC, self).__init__()
-        self.output_nc=output_nc
         self.net = get_segmentation_network(output_nc)
     def forward(self, x):
         x = self.net(x)
@@ -200,25 +200,27 @@ class NetD(nn.Module):
     def __init__(self, input_nc,output_nc, ndf=64, norm_layer=nn.BatchNorm2d):
         super(NetD, self).__init__()
         # size: 3 * 36 * 120
-        self.conv1 =nn.Conv2d(input_nc, ndf, kernel_size=4, stride=2, padding=0)
+        self.conv1 =nn.Conv2d(input_nc, ndf, kernel_size=3, stride=2, padding=1)
         self.LeakyReLU1 =nn.LeakyReLU(0.2, True)
 
+        kernel_size=3
+        padding=1
         self.localNet = [
 
 
-            nn.Conv2d(ndf, ndf * 2, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf, ndf * 2, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 2),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 2, ndf * 4, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 2, ndf * 4, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 4),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 4, ndf * 8, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 4, ndf * 8, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 8),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 8, ndf * 8, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 8, ndf * 8, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 8),
             nn.LeakyReLU(0.2, True),
 
@@ -231,23 +233,23 @@ class NetD(nn.Module):
 
         self.globalNet = [
 
-            nn.Conv2d(ndf, ndf * 2, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf, ndf * 2, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 2),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 2, ndf * 4, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 2, ndf * 4, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 4),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 4, ndf * 8, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 4, ndf * 8, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 8),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 8, ndf * 8, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 8, ndf * 8, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 8),
             nn.LeakyReLU(0.2, True),
 
-            nn.Conv2d(ndf * 8, ndf * 8, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(ndf * 8, ndf * 8, kernel_size=kernel_size, stride=2, padding=padding),
             norm_layer(ndf * 8),
             nn.LeakyReLU(0.2, True)
         ]
@@ -260,6 +262,7 @@ class NetD(nn.Module):
         self.fc3 = nn.Linear(2048, output_nc)
         self.drop3 = nn.Dropout(0.5)
         self.tanh = nn.Tanh()
+
     def forward(self, input):
         x=self.LeakyReLU1(self.conv1(input))
 
@@ -292,7 +295,7 @@ def get_norm_layer(norm_type='instance'):
         raise NotImplementedError('normalization layer [%s] is not found' % norm_type)
     return norm_layer
 
-def define_Net(input_nc, output_nc, ngf, netType, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def define_Net(input_nc, output_nc, ngf, netType, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[], class_number=7):
     """Create a generator
 
     Parameters:
@@ -323,9 +326,9 @@ def define_Net(input_nc, output_nc, ngf, netType, norm='batch', use_dropout=Fals
     norm_layer = get_norm_layer(norm_type=norm)
 
     if netType == 'NetG':
-        net = NetG(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+        net = NetG(input_nc, output_nc, 5, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     elif netType == 'NetC':
-        net = NetC(input_nc, 5, ngf, norm_layer=norm_layer)
+        net = NetC(input_nc, class_number)
     elif netType == 'NetD':
         net = NetD(input_nc, 1, ngf, norm_layer=norm_layer)
     else:

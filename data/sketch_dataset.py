@@ -7,6 +7,7 @@ import cv2
 from PIL import Image
 from easydict import EasyDict as edict
 from data.base_dataset import BaseDataset, get_params, get_transform
+import numpy as np
 
 class SketchDataset(BaseDataset):
     def __init__(self,opt):
@@ -15,6 +16,8 @@ class SketchDataset(BaseDataset):
         self.seg_root_path=opt.seg_root_path
 
         assert(self.opt.load_size >= self.opt.crop_size)   # crop_size should be smaller than the size of loaded image
+        assert self.opt.crop_size == 256
+
         self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc
         self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
 
@@ -87,6 +90,9 @@ class SketchDataset(BaseDataset):
         B = AB.crop((w2, 0, w, h))
 
         seg=cv2.imread(seg_file,cv2.IMREAD_GRAYSCALE)
+        seg=cv2.resize(seg,(self.opt.crop_size,self.opt.crop_size),interpolation=cv2.INTER_NEAREST)
+
+        assert np.max(seg)<self.opt.class_number,'seg label number is {}'.format(np.unique(seg))
 
         # apply the same transform to both A and B
         transform_params = get_params(self.opt, A.size)

@@ -15,7 +15,8 @@ def get_segmentation_network(class_number):
     config.backbone_pretrained=True
     config.layer_preference='last'
     config.net_name='fcn'
-    config.input_shape=[480,480]
+    #fixed input shape, cannot change
+    config.input_shape=[256,256]
     config.upsample_type='bilinear'
     config.use_bn=True
     config.use_dropout=False

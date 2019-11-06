@@ -23,6 +23,7 @@ class BaseOptions():
         parser.add_argument('--dataroot', required=False, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
         parser.add_argument('--img_root_path', required=False, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
         parser.add_argument('--seg_root_path', required=False, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
+        parser.add_argument('--class_number',help='semantic segmentation class number',type=int, default=9)
         parser.add_argument('--name', type=str, default='experiment_name', help='name of the experiment. It decides where to store samples and models')
         parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
